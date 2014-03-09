@@ -1,0 +1,20 @@
+html
+{
+	background-color: #f4f4f4;
+	overflow-y: scroll;
+}
+
+body
+{
+	background-color: #f4f4f4;
+}
+
+body.hasMasthead
+{
+	margin-top: 50px;
+}
+
+#page
+{
+	background-color: #fff;
+}
