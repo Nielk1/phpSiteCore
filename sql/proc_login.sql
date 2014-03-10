@@ -1,12 +1,11 @@
 DELIMITER $$
 CREATE PROCEDURE `login`(
 	IN email VARCHAR(50),-- CHARACTER SET utf8 collate utf8_general_ci,
-	IN password CHAR(128),-- CHARACTER SET utf8 collate utf8_general_ci
 	OUT id INT(11),
 	OUT username VARCHAR(30),
 	OUT success BIT(1),
 	OUT locked BIT(1),
-	OUT pass CHAR(128)
+	OUT pass VARCHAR(255)
 )
 BEGIN
 	DECLARE inputPass CHAR(128);

@@ -5,13 +5,21 @@ CREATE TABLE `members` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=latin1;
 
-CREATE TABLE `member_auth_basic` (
+CREATE TABLE `members_auth_basic` (
   `memberId` int(11) NOT NULL,
-  `password` char(128) NOT NULL,
-  `salt` char(128) NOT NULL,
+  `password` VARCHAR(255) NOT NULL,
   PRIMARY KEY (`memberId`),
   CONSTRAINT `fk__member_auth_basic__members__memberId` FOREIGN KEY (`memberId`) REFERENCES `members` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=latin1;
+
+INSERT INTO `members` (`username`,`email`)
+VALUES('admin','root@admin');
+
+INSERT INTO `members_auth_basic` (`memberId`,`password`)
+VALUES(LAST_INSERT_ID(),'$2y$10$Cc0yO1uafMSg3MwZ.oGa5OJLvebwnTEocXxprVaOLvvhgVHWqAHMK'); -- "admin"
+
+
+
 
 CREATE TABLE `permission_types` (
   `id` int(11) NOT NULL AUTO_INCREMENT,

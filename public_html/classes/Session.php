@@ -108,52 +108,78 @@ class Session {
 		//	$stmt->bindParam(':locked', $locked, PDO::PARAM_BOOL|PDO::PARAM_INPUT_OUTPUT, 1);
 		//	$stmt->execute(); // Execute the prepared query.
 
-		if($stmt = $mysqli->prepare("CALL `login`(?,?,@id,@username,@success,@locked,@pass)")) {
-			$stmt->bind_param('ss', $email, $password);
-			$stmt->execute(); // Execute the prepared query.
-			$stmt->free_result();
-			
-			if($stmt = $mysqli->prepare("SELECT @id, @username, @success, @locked, @pass")) {
-				$stmt->execute(); // Execute the prepared query.
-				$stmt->store_result();
-				$stmt->bind_result($user_id, $username, $success, $locked, $passHashed); // get variables from result.
-				$stmt->fetch();
+		//$hash = password_hash($password, PASSWORD_DEFAULT, array("cost" => 10));
+		
+		if($stmt = $mysqli->prepare("CALL `login_getinfo`(?,@id,@username,@pass)")) {
+			$stmt->bind_param('s', $email);
+			if($stmt->execute()) { // Execute the prepared query.
+				$stmt->free_result();
+				if($stmt = $mysqli->prepare("SELECT @id, @username, @pass")) {
+					if($stmt->execute()) { // Execute the prepared query.
+						$stmt->store_result();
+						$stmt->bind_result($user_id, $username, $hash); // get variables from result.
+						$stmt->fetch();
 
-				if($user_id != null) {
-					// We check if the account is locked from too many login attempts
-					if(!$locked) {
-						if($success) {
-							// Password is correct!
+						if($user_id != null) {
+							// We check if the account is locked from too many login attempts
+							//if(!$locked) {
+								if(password_verify($password, $hash)) {
+									// Password is correct!
 
-							$user_browser = $_SERVER['HTTP_USER_AGENT']; // Get the user-agent string of the user.
-							//$user_id = preg_replace("/[^0-9]+/", "", $user_id); // XSS protection as we might print this value
-							//userID is set by the DB, of course it's safe
-							$_SESSION['user_id'] = $user_id;
-							$username = preg_replace("/[^a-zA-Z0-9_\-]+/", "", $username); // XSS protection as we might print this value
-							$_SESSION['username'] = $username;
-							$_SESSION['login_string'] = hash('sha512', $passHashed.$user_browser);
-							
-							//$this->regenerateSession();
-							
-							// Login successful.
-							return true;
+									if (password_needs_rehash($hash, PASSWORD_DEFAULT, array("cost" => 10))) {
+										$hash = password_hash($password, PASSWORD_DEFAULT, array("cost" => 10));
+										/* Store new hash in db */
+										
+										if($stmt = $mysqli->prepare("CALL `login_rehash`(?,?)")) {
+											$stmt->bind_param('is', $user_id, $hash);
+											
+											if($stmt->execute()) { // Execute the prepared query.
+												$stmt->free_result();
+											}
+										}
+									}
+									
+									$user_browser = $_SERVER['HTTP_USER_AGENT']; // Get the user-agent string of the user.
+									//$user_id = preg_replace("/[^0-9]+/", "", $user_id); // XSS protection as we might print this value
+									//userID is set by the DB, of course it's safe
+									$_SESSION['user_id'] = $user_id;
+									$username = preg_replace("/[^a-zA-Z0-9_\-]+/", "", $username); // XSS protection as we might print this value
+									$_SESSION['username'] = $username;
+									//$_SESSION['login_string'] = hash('sha512', $hash.$user_browser);
+									$_SESSION['login_string'] = hash('sha512', $user_browser);
+									
+									//$this->regenerateSession();
+									
+									// Login successful.
+									return true;
+								}else{
+									// login was not successful
+									return false;
+								}
+							//}else{
+							//	// Account is locked
+							//	// Send an email to user saying their account is locked
+							//	return false;
+							//}
 						}else{
-							// login was not successful
+							// No user exists (obviously don't tell them this)
 							return false;
 						}
-					}else{
-						// Account is locked
-						// Send an email to user saying their account is locked
+					} else {
+						// query execute failed?
 						return false;
 					}
-				}else{
-					// No user exists (obviously don't tell them this)
+				} else {
+					// query failed prepare?
 					return false;
 				}
 			} else {
-				// query failed?
+				// query execute failed?
 				return false;
 			}
+		} else {
+			// query failed prepare?
+			return false;
 		}
 
 		// Using prepared Statements means that SQL injection is not possible.
@@ -238,30 +264,46 @@ class Session {
 	 
 			$user_browser = $_SERVER['HTTP_USER_AGENT']; // Get the user-agent string of the user.
 	 
-			if ($stmt = $mysqli->prepare("SELECT password FROM members WHERE id = ? LIMIT 1")) { 
-				$stmt->bind_param('i', $user_id); // Bind "$user_id" to parameter.
-				$stmt->execute(); // Execute the prepared query.
-				$stmt->store_result();
-	 
-				if($stmt->num_rows == 1) { // If the user exists
-					$stmt->bind_result($password); // get variables from result.
-					$stmt->fetch();
-					$login_check = hash('sha512', $password.$user_browser);
-					if($login_check == $login_string) {
-						// Logged In!!!!
-						return true;
-					} else {
-						// Not logged in
-						return false;
-					}
-				} else {
-					// Not logged in
-					return false;
-				}
-			} else {
-				// Not logged in
-				return false;
-			}
+			//if($stmt = $mysqli->prepare("CALL `login_gethash`(?,@pass)")) {
+			//	$stmt->bind_param('i', $user_id);
+			//	if($stmt->execute()) { // Execute the prepared query.
+			//		$stmt->free_result();
+			//		if($stmt = $mysqli->prepare("SELECT @pass")) {
+			//			if($stmt->execute()) { // Execute the prepared query.
+			//				$stmt->store_result();
+			//				$stmt->bind_result($hash); // get variables from result.
+			//				$stmt->fetch();
+			//				
+			//				if($hash != null) {
+			//					$login_check = hash('sha512', $hash.$user_browser);
+								$login_check = hash('sha512', $user_browser);
+								if($login_check == $login_string) {
+									// Logged In!!!!
+									return true;
+								} else {
+									// Not logged in
+									return false;
+								}
+			//				} else {
+			//					// Not logged in
+			//					return false;
+			//				}
+			//			} else {
+			//				// Not logged in
+			//				return false;
+			//			}
+			//		} else {
+			//			// Not logged in
+			//			return false;
+			//		}
+			//	} else {
+			//		// Not logged in
+			//		return false;
+			//	}
+			//} else {
+			//	// Not logged in
+			//	return false;
+			//}
 		} else {
 			// Not logged in
 			return false;

@@ -2,13 +2,13 @@
 	<div id="page">
 		<?php if($loggedIn): ?>
 			<form action="login/logout" method="post" name="login_form">
-				<input type="button" value="Logout" />
+				<button type="submit">Logout</button>
 			</form>
 		<?php else: ?>
 			<form action="login/login" method="post" name="login_form">
 				Email: <input type="text" name="email" /><br />
 				Password: <input type="password" name="password" id="password"/><br />
-				<input id="btnLogin" type="button" value="Login"/>
+				<button type="submit">Login</button>
 			</form>
 		<?php endif; ?>
 			<!-- <?php echo $content; ?> -->

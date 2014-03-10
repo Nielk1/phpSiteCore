@@ -5,6 +5,8 @@
 error_reporting(E_ALL ^ E_NOTICE); // #1 Report all Errors
 //error_reporting(0); // #2 No Error Reporting
 
+require("lib/password.php");
+
 define('ROOT_DIR',dirname(__FILE__).'/');
 
 /*Directories that contain classes*/
@@ -92,8 +94,6 @@ class SiteCore {
 		//echo('</br>');
 		//print_r($_GET);
 		
-		//Basicly, try to load a class with this name from the pages dir specificly (postpend Page.php)
-
 		//echo($_SERVER['QUERY_STRING']);
 		//print_r($_SERVER);
 	}
