@@ -2,18 +2,30 @@
 class Widget_Masthead {
 	private $loggedIn;
 	private $username;
+	private $email;
 	//private $google;
+	private $session;
 
-	public function __construct($loggedIn, $username) {
-		$this->loggedIn = $loggedIn;
-		$this->username = $username;
+	public function __construct() {
 		//$this->google = new GooglePlusLogin();
 	}
+	
+    /**
+     * @PdInject session
+     */
+    public function setSession($session) {
+        $this->session = $session;
+		
+		$this->loggedIn = $this->session->login_check($this->mysqli);
+		$this->username = $_SESSION['username'];
+		$this->email = $_SESSION['email'];
+    }
 	
 	public function render() {
 		$masthead = new Template();
 		$masthead->loggedIn = $this->loggedIn;
 		$masthead->username = $this->username;
+		$masthead->email = $this->email;
 		//$masthead->google = $this->google->render();
 		return $masthead->render('Template_Widget_Masthead.php');
 	}

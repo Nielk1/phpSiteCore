@@ -1,9 +1,9 @@
 		<script type="text/javascript">
 			if(typeof pageElements == 'undefined') { pageElements = {}; }
-			if(typeof loggedIn == 'undefined') { <?php if($loggedIn): ?>loggedIn = true;<?php else: ?>loggedIn = false;<?php endif; ?> }
-			if(typeof username == 'undefined') { <?php if($username != null): ?>username = '<?php echo $username; ?>';<?php else: ?>username = null;<? endif; ?> }
+			//if(typeof loggedIn == 'undefined') { <?php if($loggedIn): ?>loggedIn = true;<?php else: ?>loggedIn = false;<?php endif; ?> }
+			//if(typeof username == 'undefined') { <?php if($username != null): ?>username = '<?php echo $username; ?>';<?php else: ?>username = null;<? endif; ?> }
 			
-			$(document).on('sessionStateChange',function(){
+			/*$(document).on('sessionStateChange',function(){
 				if(loggedIn)
 				{
 					pageElements.loginLink.hide();
@@ -12,10 +12,26 @@
 					pageElements.loginLink.show();
 					pageElements.logoutLink.hide();
 				}
-			});
+			});*/
 			
-			/*$(document).ready(function(){
-				pageElements.loginLink = $('#login');
+			$(document).ready(function(){
+				if(pageElements.btnProfileToggle == null) pageElements.btnProfileToggle = $('#btnProfileToggle');
+
+				<?php if($loggedIn): ?>
+				var popover = pageElements.btnProfileToggle.popover({
+					html:true,
+					content:function(){return $('#MastheadProfile').html();},
+					template: '<div class="popover profile_popover" style="z-index:1030;"><div class="arrow"></div><div class="popover-content profile_popover-content"></div></div>'
+				});
+				////popover.setContent();
+				//popover.data('bs.popover').tip().css('z-index', 1030);
+				////popover.$tip.addClass(popover.options.placement);
+				//popover.data('bs.popover').tip().find('div.popover-content').css("padding",0);
+				
+				pageElements.btnProfileToggle.on('click',function(e){e.preventDefault();});
+				<?php endif; ?>
+				
+				/*pageElements.loginLink = $('#login');
 				pageElements.logoutLink = $('#logout');
 				pageElements.loginSection = $('#login_box');
 				pageElements.loginForm = $('#login_form');
@@ -76,6 +92,6 @@
 							}
 						});
 					}
-				});
-			});*/
+				});*/
+			});
 		</script>

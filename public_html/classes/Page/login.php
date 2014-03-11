@@ -27,9 +27,9 @@ class Page_login {
 		$sub2 = $_GET['p3'];
 		if($subfunction == null) {
 			$this->renderPage();
-		} elseif($subfunction == 'login') {
+		} elseif($subfunction == 'Login') {
 			$this->doLogin();
-		} elseif($subfunction == 'logout') {
+		} elseif($subfunction == 'Logout') {
 			$this->doLogout();
 		//} elseif($subfunction == 'plus') {
 		//	$tmp = new GooglePlusLogin();
@@ -50,12 +50,13 @@ class Page_login {
 		$view->username = $username;
 		$view->scripttags = "";
 
-		$masthead = new Widget_Masthead($isLoggedIn, $username);
+		$masthead = Pd_Make::name(Widget_Masthead);
+		//$masthead = new Widget_Masthead($isLoggedIn, $username);
 		$view->masthead = $masthead->render();
 
 		$view->scripttags .= $masthead->renderScript();
 
-		echo $view->render('Template_Page_login.php');
+		echo $view->render('Template_Page_Login.php');
 	}
 	
 	private function doLogin() {
@@ -66,11 +67,11 @@ class Page_login {
 			   $password = $_POST['password'];
 			   if($this->session->login($email, $password, $this->mysqli) == true) {
 				  // Login success
-				  header ("location:/login"); 
+				  header ("location:/Login"); 
 				  echo 'Success: You have been logged in!';
 			   } else {
 				  // Login failed
-				  header('Location: error/1');
+				  header('Location: Error/1');
 			   }
 			} else { 
 			   // The correct POST variables were not sent to this page.
@@ -84,7 +85,7 @@ class Page_login {
 		{
 			if($_SERVER['REQUEST_METHOD'] == 'POST') { 
 				$this->session->logout();
-				header ("location:/login"); 
+				header ("location:/Login"); 
 				echo 'Success: You have been logged out!';
 			} else { 
 			   // The correct POST variables were not sent to this page.

@@ -63,7 +63,7 @@ class SiteCore {
 				$pageName = $_GET['p1'];
 				if($pageName == '403_shtml') {
 					echo '403 Forbidden';
-				} elseif($pageName == 'main') {
+				} elseif($pageName == 'Main') {
 					//next($_GET);
 					//$subpage = key($_GET);
 					$subpage = $_GET['p2'];
@@ -88,7 +88,7 @@ class SiteCore {
 				echo '404: "', $pageName, '": ', $e->getMessage(), "\n";
 			}			
 		} else {
-			$mainPage = Pd_Make::name('Page_main');
+			$mainPage = Pd_Make::name('Page_Main');
 			$mainPage->render();
 		}
 		//echo('</br>');

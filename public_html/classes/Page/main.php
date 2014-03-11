@@ -32,12 +32,13 @@ class Page_main {
 		$view->username = $username;
 		$view->scripttags = "";
 		
-		$masthead = new Widget_Masthead($isLoggedIn, $username);
+		$masthead = Pd_Make::name(Widget_Masthead);
+		//$masthead = new Widget_Masthead($isLoggedIn, $username);
 		$view->masthead = $masthead->render();
 		
 		$view->scripttags .= $masthead->renderScript();
 		
-		echo $view->render('Template_Page_main.php');
+		echo $view->render('Template_Page_Main.php');
 	}
 }
 ?>

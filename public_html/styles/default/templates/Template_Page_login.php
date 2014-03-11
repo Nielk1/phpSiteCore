@@ -1,11 +1,11 @@
 <?php include('Template_Part_Header.php'); ?>
 	<div id="page">
 		<?php if($loggedIn): ?>
-			<form action="login/logout" method="post" name="login_form">
+			<form action="Login/Logout" method="post" name="login_form">
 				<button type="submit">Logout</button>
 			</form>
 		<?php else: ?>
-			<form action="login/login" method="post" name="login_form">
+			<form action="Login/Login" method="post" name="login_form">
 				Email: <input type="text" name="email" /><br />
 				Password: <input type="password" name="password" id="password"/><br />
 				<button type="submit">Login</button>

@@ -143,7 +143,8 @@ class Session {
 									//$user_id = preg_replace("/[^0-9]+/", "", $user_id); // XSS protection as we might print this value
 									//userID is set by the DB, of course it's safe
 									$_SESSION['user_id'] = $user_id;
-									$username = preg_replace("/[^a-zA-Z0-9_\-]+/", "", $username); // XSS protection as we might print this value
+									$_SESSION['email'] = preg_replace("/[^a-zA-Z0-9_\@-]+/", "", $email);
+									$username = preg_replace("/[^a-zA-Z0-9_\@-]+/", "", $username); // XSS protection as we might print this value
 									$_SESSION['username'] = $username;
 									//$_SESSION['login_string'] = hash('sha512', $hash.$user_browser);
 									$_SESSION['login_string'] = hash('sha512', $user_browser);

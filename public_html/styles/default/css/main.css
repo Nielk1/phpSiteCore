@@ -18,3 +18,78 @@ body.hasMasthead
 {
 	background-color: #fff;
 }
+.profile_button_wrapper
+{
+	display:block;
+	padding:0;
+	
+	overflow: visible;
+}
+.profile_button,
+.profile_button:focus,
+.profile_button:hover,
+.login_button,
+.login_button:focus,
+.login_button:hover {
+	outline: none;
+	
+	color:#fff;
+	
+	height:32px;
+	
+	padding: 9px 10px;
+	overflow: hidden;
+	
+	cursor: pointer;
+	
+	background:none;
+	border:none;
+	
+	display:block;
+	text-decoration:none;
+}
+
+.login_button
+{
+	line-height:100%;
+}
+
+.profile_button
+{
+	font-size:22px;
+	width:42px;
+}
+
+.profile_panel
+{
+	width:272px;
+}
+
+.profile_popover
+{
+	left: -220px !important;
+}
+
+.profile_popover .panel-footer
+{
+	overflow:hidden;
+}
+
+.profile_popover.popover.bottom>.arrow
+{
+	left: 240px !important;
+}
+
+.profile_popover-content
+{
+	padding:0;
+}
+
+.navbar-collapse {
+	clear:both;
+}
+@media (min-width: 768px) {
+	.navbar-collapse {
+		clear:none;
+	}
+}
