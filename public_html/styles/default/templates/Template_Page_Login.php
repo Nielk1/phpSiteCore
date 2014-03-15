@@ -1,5 +1,6 @@
 <?php include('Template_Part_Header.php'); ?>
-	<div id="page">
+<div class="panel">
+	<div class="panel-body">
 		<?php if($loggedIn): ?>
 			<form action="Login/Logout" method="post" name="login_form">
 				<button type="submit">Logout</button>
@@ -13,4 +14,5 @@
 		<?php endif; ?>
 			<!-- <?php echo $content; ?> -->
 	</div>
+</div>
 <?php include('Template_Part_Footer.php'); ?>

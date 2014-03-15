@@ -1,5 +1,5 @@
 <?php
-class Page_admin {
+class Page_Admin {
 	private $_database;
 	private $mysqli;
 	private $_session;

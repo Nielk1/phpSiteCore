@@ -1,5 +1,5 @@
 <?php
-class Page_main {
+class Page_Main {
 	private $_database;
 	private $mysqli;
 	private $_session;

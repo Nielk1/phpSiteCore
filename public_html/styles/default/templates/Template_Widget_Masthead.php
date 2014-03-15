@@ -7,14 +7,17 @@
 
 				<!-- I don't want it apart of the collapsible portion -->
 				<div class="navbar-header pull-right">
-						<div id="btnProfileToggleWrapper" class="navbar-toggle profile_button_wrapper">
-							<?php if($loggedIn): ?>
-								<a id="btnProfileToggle" class="glyphicon glyphicon-user profile_button" href="/Login" data-container="#btnProfileToggleWrapper" data-toggle="popover" data-placement="bottom">
-									<span class="sr-only">Toggle profile</span>
-								</a>
-							<?php else: ?>
-								<a id="btnLogin" class="btn btn-default login_button" href="/Login">Login</a>
-							<?php endif; ?>
+						<div id="btnProfileToggleWrapper" class="profile_button_wrapper">
+								<?php if($loggedIn): ?>
+									<a id="btnProfileToggle" href="/Login" role="button" data-container="#btnProfileToggleWrapper" data-toggle="popover" data-placement="bottom">
+										<div class="glyphicon glyphicon-user profile_button">
+											<span class="sr-only">Toggle profile</span>
+										</div>
+										<span class="badge pull-right profile_button_badge">42</span>
+									</a>
+								<?php else: ?>
+									<a id="btnLogin" class="btn btn-default login_button" href="/Login" role="button"><span class="glyphicon glyphicon-log-in"></span> Login</a>
+								<?php endif; ?>
 						</div>
 					<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
 						<span class="sr-only">Toggle navigation</span>
@@ -42,13 +45,15 @@
 			</a>
 			<div class="media-body">
 				<h4 class="media-heading"><?php echo $username; ?></h4>
-				<?php echo $email; ?>
+				<p><?php echo $email; ?></p>
+				<p><a href="/Manage" class="btn btn-default" role="button">Manage</a></p>
 			</div>
 		</div>
 	</div>
 	<div class="panel-footer">
+		<a href="/Profile" class="btn btn-primary" role="button">Public Profile</a>
 		<form action="/Login/Logout" method="post" name="login_form" class="pull-right">
-			<button type="submit" class="btn btn-default">Logout</button>
+			<button type="submit" class="btn btn-default"><span class="glyphicon glyphicon-log-out"></span> Logout</button>
 		</form>
 	</div>
 </div>

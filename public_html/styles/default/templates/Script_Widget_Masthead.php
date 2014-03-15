@@ -21,7 +21,7 @@
 				var popover = pageElements.btnProfileToggle.popover({
 					html:true,
 					content:function(){return $('#MastheadProfile').html();},
-					template: '<div class="popover profile_popover" style="z-index:1030;"><div class="arrow"></div><div class="popover-content profile_popover-content"></div></div>'
+					template: '<div class="popover profile_popover"><div class="arrow"></div><div class="popover-content profile_popover-content"></div></div>'
 				});
 				////popover.setContent();
 				//popover.data('bs.popover').tip().css('z-index', 1030);

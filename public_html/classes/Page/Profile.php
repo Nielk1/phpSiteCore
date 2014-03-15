@@ -1,5 +1,5 @@
 <?php
-class Page_Login {
+class Page_Profile {
 	private $database;
 	private $session;
 	private $mysqli;
@@ -56,7 +56,7 @@ class Page_Login {
 
 		$view->scripttags .= $masthead->renderScript();
 
-		echo $view->render('Template_Page_Login.php');
+		echo $view->render('Template_Page_Profile.php');
 	}
 	
 	private function doLogin() {
