@@ -24,6 +24,7 @@ class Widget_Manage_Profile {
 	public function render() {
 		$widgetData = new Template();
 		$widgetData->loggedIn = $this->loggedIn;
+		$widgetData->username = $_SESSION['username'];
 		//$masthead->google = $this->google->render();
 		return $widgetData->render('Template_Widget_Manage_Profile.php');
 	}

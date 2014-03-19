@@ -31,6 +31,8 @@ class Page_Login {
 			$this->doLogin();
 		} elseif($subfunction == 'Logout') {
 			$this->doLogout();
+		} elseif($subfunction == 'Register') {
+			$this->doRegister();
 		//} elseif($subfunction == 'plus') {
 		//	$tmp = new GooglePlusLogin();
 		//	echo $tmp->respond();
@@ -87,6 +89,26 @@ class Page_Login {
 				$this->session->logout();
 				header ("location:/Login"); 
 				echo 'Success: You have been logged out!';
+			} else { 
+			   // The correct POST variables were not sent to this page.
+			   echo 'Invalid Request';
+			}
+		}
+	}
+	
+	private function doRegister() {
+		if($sub2 == null)
+		{
+			if(isset($_POST['email'])) { 
+			   $email = $_POST['email'];
+			   if($this->session->register($email, $this->mysqli) == true) {
+				  // Login success
+				  header ("location:/Login"); 
+				  echo 'Success: Registration email sent.';
+			   } else {
+				  // Login failed
+				  header('Location: Error/1');
+			   }
 			} else { 
 			   // The correct POST variables were not sent to this page.
 			   echo 'Invalid Request';

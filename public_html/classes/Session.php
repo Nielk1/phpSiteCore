@@ -17,6 +17,21 @@ class Session {
 		$this->mysqli = $this->_database->getMySQL();
     }
 	
+	function urlsafe_b64encode($string) {
+		$data = base64_encode($string);
+		$data = str_replace(array('+','/','='),array('-','_',''),$data);
+		return $data;
+	}
+
+	function urlsafe_b64decode($string) {
+		$data = str_replace(array('-','_'),array('+','/'),$string);
+		$mod4 = strlen($data) % 4;
+		if ($mod4) {
+			$data .= substr('====', $mod4);
+		}
+		return base64_decode($data);
+	}
+	
 	function sec_session_start() {
 		$session_name = 'sec_session_id'; // Set a custom session name
 		$secure = false; // Set to true if using https.
@@ -240,6 +255,51 @@ class Session {
 		// Destroy session
 		session_destroy();
 		//header('Location: ./');
+	}
+	
+	function register($email, $mysqli) {
+		if($stmt = $mysqli->prepare("CALL `login_register_basic`(?,@token,@sendMail)")) {
+			$stmt->bind_param('s', $email);
+			if($stmt->execute()) { // Execute the prepared query.
+				$stmt->free_result();
+				if($stmt = $mysqli->prepare("SELECT @token, @sendMail")) {
+					if($stmt->execute()) { // Execute the prepared query.
+						$stmt->store_result();
+						$stmt->bind_result($token, $sendMail); // get variables from result.
+						$stmt->fetch();
+
+						if($token != null) {
+							if($sendMail == 1)
+							{
+								$headers = 'MIME-Version: 1.0' . "\r\n";
+								$headers .= 'Content-type: text/html; charset=utf-8' . "\r\n";
+								$headers .= 'From: Name ' . "\r\n";
+								$headers .= 'Reply-To: Name ' . "\r\n";
+								$subject = 'SiteCore Registration Token';
+								$message .= '<div>' . $this->urlsafe_b64encode($token) . '</div>';
+
+								mail($email,$subject, $message, $headers);
+							}
+						}else{
+							// registration failed
+							return false;
+						}
+					} else {
+						// query execute failed?
+						return false;
+					}
+				} else {
+					// query failed prepare?
+					return false;
+				}
+			} else {
+				// query execute failed?
+				return false;
+			}
+		} else {
+			// query failed prepare?
+			return false;
+		}
 	}
 	
 	protected function preventHijacking()

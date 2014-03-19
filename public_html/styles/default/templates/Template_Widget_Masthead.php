@@ -16,7 +16,7 @@
 										<span class="badge pull-right profile_button_badge">42</span>
 									</a>
 								<?php else: ?>
-									<a id="btnLogin" class="btn btn-default login_button" href="/Login" role="button"><span class="glyphicon glyphicon-log-in"></span> Login</a>
+									<a id="btnLogin" class="btn btn-sm btn-default login_button" href="/Login" role="button"><span class="glyphicon glyphicon-log-in"></span> Login</a>
 								<?php endif; ?>
 						</div>
 					<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">

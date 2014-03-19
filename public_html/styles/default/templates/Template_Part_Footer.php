@@ -1,4 +1,4 @@
-			</div><!-- /.container -->
+			<!--</div>--><!-- /.container -->
 		<!--</div>-->
 		
 		<?php/*
