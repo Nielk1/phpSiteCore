@@ -97,21 +97,37 @@ class Page_Login {
 	}
 	
 	private function doRegister() {
-		if($sub2 == null)
-		{
-			if(isset($_POST['email'])) { 
-			   $email = $_POST['email'];
-			   if($this->session->register($email, $this->mysqli) == true) {
-				  // Login success
-				  header ("location:/Login"); 
-				  echo 'Success: Registration email sent.';
-			   } else {
-				  // Login failed
-				  header('Location: Error/1');
-			   }
-			} else { 
-			   // The correct POST variables were not sent to this page.
-			   echo 'Invalid Request';
+		if($sub2 == null) {
+			if($_SERVER['REQUEST_METHOD'] === 'POST') {
+				if(isset($_POST['email'])) { 
+				   $email = $_POST['email'];
+				   if($this->session->register($email, $this->mysqli) == true) {
+					  // Register success
+					  header ("location:/Login"); 
+					  echo 'Success: Registration email sent.';
+				   } else {
+					  // Register failed
+					  header('Location: Error/1');
+				   }
+				} else { 
+				   // The correct POST variables were not sent to this page.
+				   echo 'Invalid Request';
+				}
+			} elseif($_SERVER['REQUEST_METHOD'] === 'GET') {
+				if ( isset($_GET['token']) ) {
+					if($this->session->register_token($_GET['token'], $this->mysqli) == true) {
+					  // Register success
+					  header ("location:/Login"); 
+					  echo 'Success: Registration step 2.';
+				   } else {
+					  // Register failed
+					  header('Location: Error/1');
+				   }
+				} else {
+					echo 'Invalid Request';
+				}
+			} else {
+				echo 'Invalid Request';
 			}
 		}
 	}

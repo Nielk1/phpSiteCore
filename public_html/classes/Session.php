@@ -1,7 +1,8 @@
 <?php
 class Session {
-	private $_database;
-	private $mysqli;
+	private $database;
+	//private $mysqli;
+	private $utility;
 	
 	public function __construct() {
 		
@@ -13,23 +14,15 @@ class Session {
     public function setDatabase($database) {
 		//$test = new Template();
 	
-        $this->_database = $database;
-		$this->mysqli = $this->_database->getMySQL();
+        $this->database = $database;
+		//$this->mysqli = $this->database->getMySQL();
     }
 	
-	function urlsafe_b64encode($string) {
-		$data = base64_encode($string);
-		$data = str_replace(array('+','/','='),array('-','_',''),$data);
-		return $data;
-	}
-
-	function urlsafe_b64decode($string) {
-		$data = str_replace(array('-','_'),array('+','/'),$string);
-		$mod4 = strlen($data) % 4;
-		if ($mod4) {
-			$data .= substr('====', $mod4);
-		}
-		return base64_decode($data);
+	/**
+	 * @PdInject utility
+	 */
+	public function setUtility($utility) {
+		$this->utility = $utility;
 	}
 	
 	function sec_session_start() {
@@ -112,136 +105,66 @@ class Session {
 		return true;
 	}
 	
-	function login($email, $password, $mysqli) {
-		// Using prepared Statements means that SQL injection is not possible.
-		//if ($stmt = $mysqli->prepare("CALL login(:email,:password,:id,:username,:success,:locked)")) {
-		//	$stmt->bindParam(':email', $email, PDO::PARAM_STR, 50);
-		//	$stmt->bindParam(':password', $password, PDO::PARAM_STR, 128);
-		//	$stmt->bindParam(':id', $user_id, PDO::PARAM_INT|PDO::PARAM_INPUT_OUTPUT, 11);
-		//	$stmt->bindParam(':username', $username, PDO::PARAM_STR|PDO::PARAM_INPUT_OUTPUT, 30);
-		//	$stmt->bindParam(':success', $success, PDO::PARAM_BOOL|PDO::PARAM_INPUT_OUTPUT, 1);
-		//	$stmt->bindParam(':locked', $locked, PDO::PARAM_BOOL|PDO::PARAM_INPUT_OUTPUT, 1);
-		//	$stmt->execute(); // Execute the prepared query.
+	function login($email, $password) {
+		if($retVals = $this->database->callScalarStoredProc("login_getinfo", array($email,'s'), "user_id", "username", "hash")) {
+			$user_id = $retVals["user_id"];
+			$username = $retVals["username"];
+			$hash = $retVals["hash"];
 
-		//$hash = password_hash($password, PASSWORD_DEFAULT, array("cost" => 10));
-		
-		if($stmt = $mysqli->prepare("CALL `login_getinfo`(?,@id,@username,@pass)")) {
-			$stmt->bind_param('s', $email);
-			if($stmt->execute()) { // Execute the prepared query.
-				$stmt->free_result();
-				if($stmt = $mysqli->prepare("SELECT @id, @username, @pass")) {
-					if($stmt->execute()) { // Execute the prepared query.
-						$stmt->store_result();
-						$stmt->bind_result($user_id, $username, $hash); // get variables from result.
-						$stmt->fetch();
+			if($user_id != null) {
+				// We check if the account is locked from too many login attempts
+				//if(!$locked) {
+					if(password_verify($password, $hash)) {
+						// Password is correct!
 
-						if($user_id != null) {
-							// We check if the account is locked from too many login attempts
-							//if(!$locked) {
-								if(password_verify($password, $hash)) {
-									// Password is correct!
-
-									if (password_needs_rehash($hash, PASSWORD_DEFAULT, array("cost" => 10))) {
-										$hash = password_hash($password, PASSWORD_DEFAULT, array("cost" => 10));
-										/* Store new hash in db */
-										
-										if($stmt = $mysqli->prepare("CALL `login_rehash`(?,?)")) {
-											$stmt->bind_param('is', $user_id, $hash);
-											
-											if($stmt->execute()) { // Execute the prepared query.
-												$stmt->free_result();
-											}
-										}
-									}
-									
-									$user_browser = $_SERVER['HTTP_USER_AGENT']; // Get the user-agent string of the user.
-									//$user_id = preg_replace("/[^0-9]+/", "", $user_id); // XSS protection as we might print this value
-									//userID is set by the DB, of course it's safe
-									$_SESSION['user_id'] = $user_id;
-									$_SESSION['email'] = preg_replace("/[^a-zA-Z0-9_\@-]+/", "", $email);
-									$username = preg_replace("/[^a-zA-Z0-9_\@-]+/", "", $username); // XSS protection as we might print this value
-									$_SESSION['username'] = $username;
-									//$_SESSION['login_string'] = hash('sha512', $hash.$user_browser);
-									$_SESSION['login_string'] = hash('sha512', $user_browser);
-									
-									//$this->regenerateSession();
-									
-									// Login successful.
-									return true;
-								}else{
-									// login was not successful
-									return false;
-								}
-							//}else{
-							//	// Account is locked
-							//	// Send an email to user saying their account is locked
-							//	return false;
+						if (password_needs_rehash($hash, PASSWORD_DEFAULT, array("cost" => 10))) {
+							$hash = password_hash($password, PASSWORD_DEFAULT, array("cost" => 10));
+							/* Store new hash in db */
+							
+							
+							
+							
+							$this->database->callNoReturnStoredProc("login_rehash", array($user_id,'i'),array($hash,'s'));
+							//if($stmt = $mysqli->prepare("CALL `login_rehash`(?,?)")) {
+							//	$stmt->bind_param('is', $user_id, $hash);
+							//	
+							//	if($stmt->execute()) { // Execute the prepared query.
+							//		$stmt->free_result();
+							//	}
 							//}
-						}else{
-							// No user exists (obviously don't tell them this)
-							return false;
 						}
-					} else {
-						// query execute failed?
+						
+						$user_browser = $_SERVER['HTTP_USER_AGENT']; // Get the user-agent string of the user.
+						//$user_id = preg_replace("/[^0-9]+/", "", $user_id); // XSS protection as we might print this value
+						//userID is set by the DB, of course it's safe
+						$_SESSION['user_id'] = $user_id;
+						$_SESSION['email'] = preg_replace("/[^a-zA-Z0-9_\@-]+/", "", $email);
+						$username = preg_replace("/[^a-zA-Z0-9_\@-]+/", "", $username); // XSS protection as we might print this value
+						$_SESSION['username'] = $username;
+						//$_SESSION['login_string'] = hash('sha512', $hash.$user_browser);
+						$_SESSION['login_string'] = hash('sha512', $user_browser);
+						
+						//$this->regenerateSession();
+						
+						// Login successful.
+						return true;
+					}else{
+						// login was not successful
 						return false;
 					}
-				} else {
-					// query failed prepare?
-					return false;
-				}
-			} else {
-				// query execute failed?
+				//}else{
+				//	// Account is locked
+				//	// Send an email to user saying their account is locked
+				//	return false;
+				//}
+			}else{
+				// No user exists (obviously don't tell them this)
 				return false;
 			}
 		} else {
 			// query failed prepare?
 			return false;
 		}
-
-		// Using prepared Statements means that SQL injection is not possible.
-		/*if ($stmt = $mysqli->prepare("SELECT id, username, password, salt FROM members WHERE email = ? LIMIT 1")) { 
-			$stmt->bind_param('s', $email); // Bind "$email" to parameter.
-			$stmt->execute(); // Execute the prepared query.
-			$stmt->store_result();
-			$stmt->bind_result($user_id, $username, $db_password, $salt); // get variables from result.
-			$stmt->fetch();
-			$password = hash('sha512', $password.$salt); // hash the password with the unique salt.
-	 
-			if($stmt->num_rows == 1) { // If the user exists
-				// We check if the account is locked from too many login attempts
-				if($this->checkbrute($user_id, $mysqli) == true) { 
-					// Account is locked
-					// Send an email to user saying their account is locked
-					return false;
-				} else {
-					if($db_password == $password) { // Check if the password in the database matches the password the user submitted. 
-						// Password is correct!
-
-						$user_browser = $_SERVER['HTTP_USER_AGENT']; // Get the user-agent string of the user.
-	 
-						$user_id = preg_replace("/[^0-9]+/", "", $user_id); // XSS protection as we might print this value
-						$_SESSION['user_id'] = $user_id; 
-						$username = preg_replace("/[^a-zA-Z0-9_\-]+/", "", $username); // XSS protection as we might print this value
-						$_SESSION['username'] = $username;
-						$_SESSION['login_string'] = hash('sha512', $password.$user_browser);
-						
-						//$this->regenerateSession();
-						
-						// Login successful.
-						return true;    
-					} else {
-						// Password is not correct
-						// We record this attempt in the database
-						$now = time();
-						$mysqli->query("INSERT INTO login_attempts (user_id, time) VALUES ('$user_id', '$now')");
-						return false;
-					}
-				}
-			} else {
-				// No user exists. 
-				return false;
-			}
-		}*/
 	}
 
 	function logout()
@@ -257,43 +180,38 @@ class Session {
 		//header('Location: ./');
 	}
 	
+	function register_token($token, $mysqli) {
+		$tokenBin = $this->utility->urlsafe_b64decode($token);
+		
+		if($tokenBin) {
+			if($retVal = $this->database->callScalarStoredProc("login_register_basic_check", array($tokenBin,'b'), "email")) {
+
+			}
+		}
+		
+		return false;
+	}
+	
 	function register($email, $mysqli) {
-		if($stmt = $mysqli->prepare("CALL `login_register_basic`(?,@token,@sendMail)")) {
-			$stmt->bind_param('s', $email);
-			if($stmt->execute()) { // Execute the prepared query.
-				$stmt->free_result();
-				if($stmt = $mysqli->prepare("SELECT @token, @sendMail")) {
-					if($stmt->execute()) { // Execute the prepared query.
-						$stmt->store_result();
-						$stmt->bind_result($token, $sendMail); // get variables from result.
-						$stmt->fetch();
+		if($retVals = $this->database->callScalarStoredProc("login_register_basic",array($email,'s'),"token","sendMail")) {
+			$token = $retVals["token"];
+			$sendMail = $retVals["sendMail"];
 
-						if($token != null) {
-							if($sendMail == 1)
-							{
-								$headers = 'MIME-Version: 1.0' . "\r\n";
-								$headers .= 'Content-type: text/html; charset=utf-8' . "\r\n";
-								$headers .= 'From: Name ' . "\r\n";
-								$headers .= 'Reply-To: Name ' . "\r\n";
-								$subject = 'SiteCore Registration Token';
-								$message .= '<div>' . $this->urlsafe_b64encode($token) . '</div>';
+			if($token != null) {
+				if($sendMail == 1) {
+					$headers = 'MIME-Version: 1.0' . "\r\n";
+					$headers .= 'Content-type: text/html; charset=utf-8' . "\r\n";
+					$headers .= 'From: Name ' . "\r\n";
+					$headers .= 'Reply-To: Name ' . "\r\n";
+					$subject = 'SiteCore Registration Token';
+					$message .= '<div>/Login/Register?token=' . $this->utility->urlsafe_b64encode($token) . '</div>';
 
-								mail($email,$subject, $message, $headers);
-							}
-						}else{
-							// registration failed
-							return false;
-						}
-					} else {
-						// query execute failed?
-						return false;
-					}
-				} else {
-					// query failed prepare?
-					return false;
+					mail($email,$subject, $message, $headers);
+					
+					return true;
 				}
-			} else {
-				// query execute failed?
+			}else{
+				// registration failed
 				return false;
 			}
 		} else {
@@ -324,47 +242,15 @@ class Session {
 			$username = $_SESSION['username'];
 	 
 			$user_browser = $_SERVER['HTTP_USER_AGENT']; // Get the user-agent string of the user.
-	 
-			//if($stmt = $mysqli->prepare("CALL `login_gethash`(?,@pass)")) {
-			//	$stmt->bind_param('i', $user_id);
-			//	if($stmt->execute()) { // Execute the prepared query.
-			//		$stmt->free_result();
-			//		if($stmt = $mysqli->prepare("SELECT @pass")) {
-			//			if($stmt->execute()) { // Execute the prepared query.
-			//				$stmt->store_result();
-			//				$stmt->bind_result($hash); // get variables from result.
-			//				$stmt->fetch();
-			//				
-			//				if($hash != null) {
-			//					$login_check = hash('sha512', $hash.$user_browser);
-								$login_check = hash('sha512', $user_browser);
-								if($login_check == $login_string) {
-									// Logged In!!!!
-									return true;
-								} else {
-									// Not logged in
-									return false;
-								}
-			//				} else {
-			//					// Not logged in
-			//					return false;
-			//				}
-			//			} else {
-			//				// Not logged in
-			//				return false;
-			//			}
-			//		} else {
-			//			// Not logged in
-			//			return false;
-			//		}
-			//	} else {
-			//		// Not logged in
-			//		return false;
-			//	}
-			//} else {
-			//	// Not logged in
-			//	return false;
-			//}
+			// $login_check = hash('sha512', $hash.$user_browser);
+			$login_check = hash('sha512', $user_browser);
+			if($login_check == $login_string) {
+				// Logged In!!!!
+				return true;
+			} else {
+				// Not logged in
+				return false;
+			}
 		} else {
 			// Not logged in
 			return false;

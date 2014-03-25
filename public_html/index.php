@@ -39,19 +39,19 @@ class SiteCore {
 	}
 	
 	public function prepare() {
-		$this->session = new Session();
-		$this->session->sec_session_start();
-	
 		$this->container = Pd_Container::get();
 		
 		$this->configuration = new Configuration();
 		$this->container->dependencies()->set('configuration', $this->configuration);
 		
+		$this->utility = Pd_Make::name(Utility);
+		$this->container->dependencies()->set('utility', $this->utility);
+		
 		$this->database = Pd_Make::name(Database);
 		$this->container->dependencies()->set('database', $this->database);
 		
-		//$this->session = Pd_Make::name(Session);
-		//$this->session =  new Session();
+		$this->session = Pd_Make::name(Session);
+		$this->session->sec_session_start();
 		$this->container->dependencies()->set('session', $this->session);
 	}
 	
@@ -72,8 +72,8 @@ class SiteCore {
 						//print_r($_SERVER);
 						//throw new Exception('Main is accessed from root unless there are subpaths or paramaters');
 					}
-				//}elseif($pageName == 'phpinfo') {
-				//	phpinfo();
+				}elseif($pageName == 'phpinfo') {
+					phpinfo();
 				} else {
 					if(!preg_match('/[A-Za-z][A-Za-z0-9]*/', $pageName)) {
 						throw new Exception('Invalid Pagename');

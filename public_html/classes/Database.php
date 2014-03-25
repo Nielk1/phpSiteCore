@@ -9,7 +9,7 @@ class Database {
 	private $mysqli; // If you are connecting via TCP/IP rather than a UNIX socket remember to add the port number as a parameter.
 	//private $pdo;
 	
-	private $_configuration;
+	private $configuration;
 	
 	public function __construct() {
 		//$this->HOST = "localhost";
@@ -25,12 +25,12 @@ class Database {
      * @PdInject configuration
      */
     public function setConfiguration($configuration) {
-		$this->_configuration = $configuration;
+		$this->configuration = $configuration;
 
-		$this->HOST = $this->_configuration->db_HOST;
-		$this->USER = $this->_configuration->db_USER;
-		$this->PASSWORD = $this->_configuration->db_PASSWORD;
-		$this->DATABASE = $this->_configuration->db_DATABASE;
+		$this->HOST = $this->configuration->db_HOST;
+		$this->USER = $this->configuration->db_USER;
+		$this->PASSWORD = $this->configuration->db_PASSWORD;
+		$this->DATABASE = $this->configuration->db_DATABASE;
 	
 		$this->mysqli = new mysqli($this->HOST, $this->USER, $this->PASSWORD, $this->DATABASE);
     }
@@ -38,6 +38,99 @@ class Database {
 	public function getMySQL() {
 		return $this->mysqli;
 		//return $this->pdo;
+	}
+	
+	// call a stored procedure, array of vars (output via "name") or vals (input via array(val,bindtype))
+	public function callScalarStoredProc($proc, $args) {
+		$argArray = array_slice(func_get_args(), 1);
+		$call = "CALL `" . $proc . "`(";
+		$prefix = '';
+		foreach ($argArray as $argVal)
+		{
+			$call .= $prefix;
+			if(is_array($argVal)) {
+				$call .= "?";
+			} else {
+				$call .= "@" . $argVal;
+			}
+			$prefix = ',';
+		}
+		$call .= ")";
+		
+		if($stmt = $this->mysqli->prepare($call)) {
+			$selectStmt = "SELECT ";
+			$prefix = '';
+			$outputArgs = array();
+			foreach ($argArray as $argVal)
+			{
+				if(is_array($argVal)) {
+					$stmt->bind_param($argVal[1], $argVal[0]);
+				}else{
+					$selectStmt .= $prefix . "@" . $argVal;
+					$prefix = ',';
+					$outputArgs[] = $argVal;
+				}
+			}
+			if($stmt->execute()) { // Execute the prepared query.
+				$stmt->free_result();
+				if($stmt = $this->mysqli->prepare($selectStmt)) {
+					if($stmt->execute()) { // Execute the prepared query.
+						//$meta = $stmt->result_metadata();
+						//while ($field = $meta->fetch_field()) {
+						//	$params[] = &$row[$field->name];
+						//}
+						foreach($outputArgs as $outputArg) {
+							$params[] = &$row[$outputArg];
+						}
+						call_user_func_array(array($stmt, 'bind_result'), $params);
+						$stmt->fetch();
+						//while ($stmt->fetch()) {
+						//	foreach($row as $key => $val) {
+						//		$c[$key] = $val;
+						//	}
+						//	$result[] = $c;
+						//}
+						$stmt->close(); 
+						
+						return $row;
+					}
+				}
+			}
+		}
+		return false;
+	}
+	
+	// call a stored procedure with no return value
+	public function callNoReturnStoredProc($proc, $args) {
+		$argArray = array_slice(func_get_args(), 1);
+		$call = "CALL `" . $proc . "`(";
+		$prefix = '';
+		foreach ($argArray as $argVal)
+		{
+			$call .= $prefix;
+			if(is_array($argVal)) {
+				$call .= "?";
+			}else{
+				$call .= "'" . $argVal . "'";
+			}
+			$prefix = ',';
+		}
+		$call .= ")";
+		
+		if($stmt = $this->mysqli->prepare($call)) {
+			foreach ($argArray as $argVal)
+			{
+				if(is_array($argVal)) {
+					$stmt->bind_param($argVal[1], $argVal[0]);
+				}
+			}
+			if($stmt->execute()) { // Execute the prepared query.
+				$stmt->free_result();
+				
+				return true;
+			}
+		}
+		return false;
 	}
 }
 ?>
