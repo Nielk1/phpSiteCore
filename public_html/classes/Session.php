@@ -180,12 +180,15 @@ class Session {
 		//header('Location: ./');
 	}
 	
-	function register_token($token, $mysqli) {
+	function register_token($token) {
 		$tokenBin = $this->utility->urlsafe_b64decode($token);
-		
 		if($tokenBin) {
 			if($retVal = $this->database->callScalarStoredProc("login_register_basic_check", array($tokenBin,'b'), "email")) {
-
+				$email = $retVal["email"];
+				if($email) {
+					echo("TODO: make registration step 2");
+					return true;
+				}
 			}
 		}
 		

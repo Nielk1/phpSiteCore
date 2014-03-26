@@ -115,9 +115,9 @@ class Page_Login {
 				}
 			} elseif($_SERVER['REQUEST_METHOD'] === 'GET') {
 				if ( isset($_GET['token']) ) {
-					if($this->session->register_token($_GET['token'], $this->mysqli) == true) {
+					if($this->session->register_token($_GET['token'])) {
 					  // Register success
-					  header ("location:/Login"); 
+					  //header ("location:/Login"); 
 					  echo 'Success: Registration step 2.';
 				   } else {
 					  // Register failed

@@ -61,15 +61,24 @@ class Database {
 			$selectStmt = "SELECT ";
 			$prefix = '';
 			$outputArgs = array();
+			$paramNum = 0;
 			foreach ($argArray as $argVal)
 			{
 				if(is_array($argVal)) {
-					$stmt->bind_param($argVal[1], $argVal[0]);
+					if($argVal[1] == 'b')
+					{
+						$null = NULL;
+						$stmt->bind_param($argVal[1], $null);
+						$stmt->send_long_data($paramNum, $argVal[0]);
+					}else{
+						$stmt->bind_param($argVal[1], $argVal[0]);
+					}
 				}else{
 					$selectStmt .= $prefix . "@" . $argVal;
 					$prefix = ',';
 					$outputArgs[] = $argVal;
 				}
+				$paramNum += 1;
 			}
 			if($stmt->execute()) { // Execute the prepared query.
 				$stmt->free_result();
@@ -118,11 +127,19 @@ class Database {
 		$call .= ")";
 		
 		if($stmt = $this->mysqli->prepare($call)) {
+			$paramNum = 0;
 			foreach ($argArray as $argVal)
 			{
 				if(is_array($argVal)) {
-					$stmt->bind_param($argVal[1], $argVal[0]);
+					if($argVal[1] == 'b')
+					{
+						$stmt->bind_param($argVal[1], NULL);
+						$stmt->send_long_data($paramNum, $argVal[0]);
+					}else{
+						$stmt->bind_param($argVal[1], $argVal[0]);
+					}
 				}
+				$paramNum += 1;
 			}
 			if($stmt->execute()) { // Execute the prepared query.
 				$stmt->free_result();
